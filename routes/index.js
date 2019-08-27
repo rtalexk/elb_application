@@ -25,4 +25,8 @@ router.get('/', async (_, res) => {
   res.render('index', { instance_id, az });
 });
 
+router.get('/health', (_, res) => {
+  res.send('Healthy');
+});
+
 module.exports = router;
