@@ -1,6 +1,54 @@
+$color-title: #888888
+$color-detail: #232F3E
+
 body
-  padding: 50px
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif
+  margin: 0
+  font: 16px "Lucida Grande", Helvetica, Arial, sans-serif
 
 a
   color: #00B7FF
+
+.content
+  min-height: 100vh
+  display: flex
+  align-items: center
+  justify-content: center
+  flex-direction: column
+
+  .card
+    display: flex
+    flex-direction: column
+    align-items: center
+    padding: 60px 80px
+    border-radius: 10px
+    // border: 1px solid #ccc
+    box-shadow: 0 10px 30px -7px rgba(0, 0, 0, 0.25)
+
+    .certified
+      display: flex
+      flex-direction: column
+      align-items: center
+      max-width: 360px
+
+      a
+        align-self: flex-end
+        margin-right: 8px
+
+    .instance
+      margin-top: 46px
+      display: grid
+      grid-template-columns: 1fr 1fr
+      grid-column-gap: 24px
+      grid-row-gap: 12px
+
+      p
+        margin: 0
+
+      p.title
+        justify-self: end
+        color: $color-title
+
+      p.detail
+        justify-self: start
+        color: $color-detail
+        font-weight: 600
