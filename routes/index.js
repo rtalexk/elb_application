@@ -6,12 +6,13 @@ const fetch = require('node-fetch');
 const url = 'http://169.254.169.254/latest/meta-data';
 
 /**
+ * Catch response and error and wrap them into an array with [data, error]
  * @param { Promise } p
  */
-const handle = p => p.then(r => [r.text()]).catch(e => [undefined, e]);
+const handle = p => p.then(async r => [await r.text()]).catch(e => [, e]);
 
 /* GET home page. */
-router.get('/', async function (_, res) {
+router.get('/', async (_, res) => {
   const failedToFetch = 'Failed to fetch';
 
   const [instance_id, instanceIdError] = await handle(fetch(`${url}/instance-id`));
