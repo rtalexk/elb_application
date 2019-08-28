@@ -1,21 +1,25 @@
 #!/bin/bash
 
-cd ~/
-
 yum update -y
 
 # install Node.js
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
-ls -la
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 . ~/.nvm/nvm.sh
 nvm install 10
+
+which node
+which nodejs
 
 # Install code
 cd elb_classic-master
 npm install
 
 # Install Nginx
-amazon-linux-extras install nginx1.12
+amazon-linux-extras install nginx1.12 -y
 
 # Configure Nginx Proxy
 mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
