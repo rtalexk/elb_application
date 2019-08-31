@@ -303,3 +303,165 @@ To run the instances now we can run the following commands:
 ```
 
 The output of the previous commands is a large `JSON` with the information of the created instances.
+
+## Elastic Load Balancer
+
+In this section we are going to perform the following actions:
+
+* Create an Application Load Balancer
+* Create a Target Group
+* Register EC2 instances in the Target Group
+* Attach the Target Group to the ALB
+
+To finish the implementation we're going to create the load balancer that will balance the traffic between instances placed in different availability zones.
+
+In this section we'll be using the new version of the ELB API (`elbv2`). For more information about load balancers and the previous version (Classic Load Balancer) refer to the [AWS ELB website](https://aws.amazon.com/elasticloadbalancing/).
+
+### Create Application Load Balancer
+
+```bash
+(bash) $ aws elbv2 create-load-balancer --name az-balancer --subnets "subnet-4bc9862c" "subnet-0d024951" --security-groups sg-0795506e7d719a67a --type application
+```
+
+In this command we specify the subnet IDs on which the EC2 where created. Also notice that I'm specifying to use an `application` load balancer as `type`. It's not required to specify the type for an ALB due to this is the default value.
+
+The outpot of the previous command is the information of the newly created ELB in `provisioning` state.
+
+```json
+{
+  "LoadBalancers": [
+    {
+      "IpAddressType": "ipv4",
+      "VpcId": "vpc-d64fd4ac",
+      "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/16e1035ea7353934",
+      "State": {
+        "Code": "provisioning"
+      },
+      "DNSName": "az-balancer-984482325.us-east-1.elb.amazonaws.com",
+      "SecurityGroups": [
+        "sg-0795506e7d719a67a"
+      ],
+      "LoadBalancerName": "az-balancer",
+      "CreatedTime": "2019-08-30T21:43:22.310Z",
+      "Scheme": "internet-facing",
+      "Type": "application",
+      "CanonicalHostedZoneId": "Z35SXDOTRQ7X7K",
+      "AvailabilityZones": [
+        {
+          "SubnetId": "subnet-0d024951",
+          "ZoneName": "us-east-1a"
+        },
+        {
+          "SubnetId": "subnet-4bc9862c",
+          "ZoneName": "us-east-1b"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Create Target Group
+
+```
+create-target-group
+    --name <value>
+    [--protocol <value>]
+    [--port <value>]
+    [--vpc-id <value>]
+    [--health-check-protocol <value>]
+    [--health-check-port <value>]
+    [--health-check-enabled | --no-health-check-enabled]
+    [--health-check-path <value>]
+    [--health-check-interval-seconds <value>]
+    [--health-check-timeout-seconds <value>]
+    [--healthy-threshold-count <value>]
+    [--unhealthy-threshold-count <value>]
+    [--matcher <value>]
+    [--target-type <value>]
+    [--cli-input-json <value>]
+    [--generate-cli-skeleton <value>]
+```
+
+```bash
+(bash) $ aws elbv2 create-target-group --name instances --target-type instance --vpc-id vpc-d64fd4ac --protocol HTTP --port 80 --health-check-path /health
+```
+
+Output:
+
+```json
+{
+  "TargetGroups": [
+    {
+      "HealthCheckPath": "/health",
+      "HealthCheckIntervalSeconds": 30,
+      "VpcId": "vpc-d64fd4ac",
+      "Protocol": "HTTP",
+      "HealthCheckTimeoutSeconds": 5,
+      "TargetType": "instance",
+      "HealthCheckProtocol": "HTTP",
+      "Matcher": {
+        "HttpCode": "200"
+      },
+      "UnhealthyThresholdCount": 2,
+      "HealthyThresholdCount": 5,
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/a0a5d74cc162d760",
+      "HealthCheckEnabled": true,
+      "HealthCheckPort": "traffic-port",
+      "Port": 80,
+      "TargetGroupName": "instances"
+    }
+  ]
+}
+```
+
+### Register instances in the Target Group
+
+```
+register-targets
+  --target-group-arn <value>
+  --targets <value>
+```
+
+```bash
+(bash) $ aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/a0a5d74cc162d760 --targets Id=i-068ae792dddda59aa Id=i-0af96e0f5e3c427c8
+```
+
+### Create Listener for the ELB
+
+```
+create-listener
+  --load-balancer-arn <value>
+  --protocol <value>
+  --port <value>
+  [--ssl-policy <value>]
+  [--certificates <value>]
+  --default-actions <value>
+  [--cli-input-json <value>]
+  [--generate-cli-skeleton <value>]
+```
+
+```bash
+(bash) $ aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/16e1035ea7353934 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/a0a5d74cc162d760
+```
+
+Putput:
+
+```json
+{
+  "Listeners": [
+    {
+      "Protocol": "HTTP",
+      "DefaultActions": [
+        {
+          "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/a0a5d74cc162d760",
+          "Type": "forward"
+        }
+      ],
+      "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/16e1035ea7353934",
+      "Port": 80,
+      "ListenerArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:listener/app/az-balancer/16e1035ea7353934/c175a94b94efc72e"
+    }
+  ]
+}
+```
