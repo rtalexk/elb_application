@@ -32,6 +32,8 @@ output
 
 `(bash) $ ` is a constant indicating that is a command running in bash. Everything below `--------------` is the output of the command, or if the response is a JSON, it will have its own section denoted by **Output:** header.
 
+> **IMPORTANT!** Make sure to replace ID parameters in all the AWS commands.
+
 Also I'm using `jq`, a command line tool used to extract information from `JSON` data, example: the following command returns a JSON with the information of the `VPC`s:
 
 ```shell
