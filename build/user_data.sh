@@ -20,7 +20,7 @@ which node
 which nodejs
 
 # Install code
-cd elb_classic-master
+cd elb_application-master
 npm install
 
 # Install Nginx

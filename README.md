@@ -268,6 +268,12 @@ Now let's do the same with the EC2 SG.
 (bash) $ aws ec2 authorize-security-group-egress --group-id sg-0c1018438bf942a83 --protocol tcp --port 80 --cidr 0.0.0.0/0
 ```
 
+```bash
+(bash) $ aws ec2 authorize-security-group-egress --group-id sg-0c1018438bf942a83 --protocol tcp --port 443 --cidr 0.0.0.0/0
+```
+
+> Note that we're oppening both HTTP (TCP at port 80) and HTTPS (TCP at port 443). In this example we're not using HTTPS to communicate client with our application, but inside the EC2 instances we're downloading code from Github which uses HTTPS to do so.
+
 Our security groups are now configured as described in the architecture. Let's continue with the EC2 configuration.
 
 ## EC2 Instances
