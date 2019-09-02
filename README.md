@@ -310,7 +310,7 @@ To run the instances now we can run the following commands:
 (bash) $ aws ec2 run-instances --image-id "ami-0b898040803850657" --instance-type "t2.micro" --security-group-ids "sg-0c1018438bf942a83" --subnet-id "subnet-0d024951" --user-data file://build/user_data.sh
 ```
 
-The output of the previous commands is a large `JSON` with the information of the created instances.
+The output of the previous commands is a large `JSON` with the information of the created instances. Take note of the `InstanceId`s.
 
 ## Elastic Load Balancer
 
@@ -341,16 +341,16 @@ The outpot of the previous command is the information of the newly created ELB i
     {
       "IpAddressType": "ipv4",
       "VpcId": "vpc-d64fd4ac",
-      "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/16e1035ea7353934",
+      "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/73a77714d4f8498b",
       "State": {
         "Code": "provisioning"
       },
-      "DNSName": "az-balancer-984482325.us-east-1.elb.amazonaws.com",
+      "DNSName": "az-balancer-940979.us-east-1.elb.amazonaws.com",
       "SecurityGroups": [
         "sg-0795506e7d719a67a"
       ],
       "LoadBalancerName": "az-balancer",
-      "CreatedTime": "2019-08-30T21:43:22.310Z",
+      "CreatedTime": "2019-09-02T17:17:45.030Z",
       "Scheme": "internet-facing",
       "Type": "application",
       "CanonicalHostedZoneId": "Z35SXDOTRQ7X7K",
@@ -413,7 +413,7 @@ Output:
       },
       "UnhealthyThresholdCount": 2,
       "HealthyThresholdCount": 5,
-      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/a0a5d74cc162d760",
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/15fcba658f0ee396",
       "HealthCheckEnabled": true,
       "HealthCheckPort": "traffic-port",
       "Port": 80,
@@ -432,7 +432,7 @@ register-targets
 ```
 
 ```bash
-(bash) $ aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/a0a5d74cc162d760 --targets Id=i-068ae792dddda59aa Id=i-0af96e0f5e3c427c8
+(bash) $ aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/15fcba658f0ee396 --targets Id=i-0efcbb18f510d7937 Id=i-0ffdbf33264b3fe15
 ```
 
 ### Create Listener for the ELB
@@ -450,7 +450,7 @@ create-listener
 ```
 
 ```bash
-(bash) $ aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/16e1035ea7353934 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/a0a5d74cc162d760
+(bash) $ aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/73a77714d4f8498b --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/15fcba658f0ee396
 ```
 
 Putput:
@@ -462,13 +462,13 @@ Putput:
       "Protocol": "HTTP",
       "DefaultActions": [
         {
-          "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/a0a5d74cc162d760",
+          "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/15fcba658f0ee396",
           "Type": "forward"
         }
       ],
-      "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/16e1035ea7353934",
+      "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/73a77714d4f8498b",
       "Port": 80,
-      "ListenerArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:listener/app/az-balancer/16e1035ea7353934/c175a94b94efc72e"
+      "ListenerArn": "arn:aws:elasticloadbalancing:us-east-1:436887685341:listener/app/az-balancer/73a77714d4f8498b/880ebbf0ac72f582"
     }
   ]
 }
