@@ -369,6 +369,8 @@ The outpot of the previous command is the information of the newly created ELB i
 }
 ```
 
+> Save the DNSName URL for later. This is the URL that you must hit to talk to your application.
+
 ### Create Target Group
 
 ```
@@ -473,3 +475,15 @@ Putput:
   ]
 }
 ```
+
+## Testing
+
+You've finish! Now it's time for testing. Get the URL from the response when you created the Load Balancer, or you cant query using the CLI:
+
+```bash
+(bash) $ aws elbv2 describe-load-balancers --names az-balancer | jq '.LoadBalancers | .[0] | .DNSName'
+----------------
+"az-balancer-940979.us-east-1.elb.amazonaws.com"
+```
+
+Now copy and paste this URL (without the quotation marks `"`) in your favorite browser. Then start refreshing multiple times and you'll see that the application is served from the two different instances.
