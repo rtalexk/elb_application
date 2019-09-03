@@ -492,15 +492,17 @@ Now copy and paste this URL (without the quotation marks `"`) in your favorite b
 
 For this tutorial we have created 2 EC2 instances, 2 Security Groups and an Application Load Balancer, which in turn uses a Target Group and a Listener.
 
-This is the order we're going to follow to remove the resources
+This is the order we're going to follow to remove the resources:
 
 1. Listener.
 2. Target Group.
 3. Load Balancer.
 4. EC2 Instances.
 4. Security Groups.
-   4.1. Remove reference between SGs.
-   4.2. Remove Security Groups.
+   1. Remove reference between SGs.
+   2. Remove Security Groups.
+
+> I think that by deleting the Load Balancer, both the Listener and the Target Group are also deleted. I have not tried it yet, but you can do it.
 
 ### Remove Listener
 
