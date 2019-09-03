@@ -455,7 +455,7 @@ create-listener
 (bash) $ aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/73a77714d4f8498b --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/15fcba658f0ee396
 ```
 
-Putput:
+Output:
 
 ```json
 {
@@ -487,3 +487,125 @@ You've finish! Now it's time for testing. Get the URL from the response when you
 ```
 
 Now copy and paste this URL (without the quotation marks `"`) in your favorite browser. Then start refreshing multiple times and you'll see that the application is served from the two different instances.
+
+## Remove provisioned resources
+
+For this tutorial we have created 2 EC2 instances, 2 Security Groups and an Application Load Balancer, which in turn uses a Target Group and a Listener.
+
+This is the order we're going to follow to remove the resources
+
+1. Listener.
+2. Target Group.
+3. Load Balancer.
+4. EC2 Instances.
+4. Security Groups.
+   4.1. Remove reference between SGs.
+   4.2. Remove Security Groups.
+
+### Remove Listener
+
+```bash
+(bash) $ aws elbv2 delete-listener --listener-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:listener/app/az-balancer/73a77714d4f8498b/880ebbf0ac72f582
+```
+
+### Remove Target Group
+
+```bash
+(bash) $ aws elbv2 delete-target-group --target-group-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/15fcba658f0ee396
+```
+
+```bash
+(bash) $ aws elbv2 delete-load-balancer --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/73a77714d4f8498b
+```
+
+### Terminate EC2 Instances
+
+```bash
+(bash) $ aws ec2 terminate-instances --instance-ids i-0efcbb18f510d7937 i-0ffdbf33264b3fe15
+```
+
+Output:
+
+```json
+{
+  "TerminatingInstances": [
+    {
+      "InstanceId": "i-0ffdbf33264b3fe15",
+      "CurrentState": {
+        "Code": 32,
+        "Name": "shutting-down"
+      },
+      "PreviousState": {
+        "Code": 16,
+        "Name": "running"
+      }
+    },
+    {
+      "InstanceId": "i-0efcbb18f510d7937",
+      "CurrentState": {
+        "Code": 32,
+        "Name": "shutting-down"
+      },
+      "PreviousState": {
+        "Code": 16,
+        "Name": "running"
+      }
+    }
+  ]
+}
+```
+
+### Remove Security Groups
+
+If you try to remove any of the security groups you'll get an error because each SG is being used by each other. Let's try:
+
+```bash
+(bash) $ aws ec2 delete-security-group --group-name elb-sg
+----------------
+An error occurred (DependencyViolation) when calling the DeleteSecurityGroup operation: resource sg-0795506e7d719a67a has a dependent object
+```
+
+#### Remove reference
+
+Why can remove any of the two references, let's verify the egress rules for the `elb-sg` group:
+
+```bash
+(bash) $ aws ec2 describe-security-groups --group-names elb-sg | jq '.SecurityGroups | .[0] | .IpPermissionsEgress | .[0]'
+```
+
+Output:
+
+```json
+{
+  "PrefixListIds": [],
+  "FromPort": 80,
+  "IpRanges": [],
+  "ToPort": 80,
+  "IpProtocol": "tcp",
+  "UserIdGroupPairs": [
+    {
+      "UserId": "436887685341",
+      "GroupId": "sg-0c1018438bf942a83"
+    }
+  ],
+  "Ipv6Ranges": []
+}
+```
+
+Now let's remove it:
+
+```bash
+(bash) $ aws ec2 revoke-security-group-egress --group-id sg-0795506e7d719a67a --protocol tcp --port 80 --source-group sg-0c1018438bf942a83
+```
+
+What we did? We removed the reference from `elb-sg` to `elb-ec2-sg`. `elb-ec2-sg` still has a reference to `elb-sg`, but `elb-ec2-sg` is not being referenced from anywhere, so it's safe to remove it:
+
+```bash
+(bash) $ aws ec2 delete-security-group --group-name elb-ec2-sg
+```
+
+With that we removed the reference from `elb-ec2-sg` to `elb-sg`, and we can remove it as well:
+
+```bash
+(bash) $ aws ec2 delete-security-group --group-name elb-sg
+```
