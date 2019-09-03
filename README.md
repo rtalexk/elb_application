@@ -278,17 +278,6 @@ Our security groups are now configured as described in the architecture. Let's c
 
 ## EC2 Instances
 
-To create an instance we use the following API:
-
-```
-run-instances
-    [--image-id <value>]
-    [--instance-type <value>]
-    [--security-group-ids <value>]
-    [--subnet-id <value>]
-    [--user-data <value>]
-```
-
 We'll create the instances in different availability zones, for that reasson we require to have the `subnet-id`s of two different AZs (remember that there's a subnet for each AZ).
 
 ```bash
@@ -319,7 +308,7 @@ In this section we are going to perform the following actions:
 * Create an Application Load Balancer
 * Create a Target Group
 * Register EC2 instances in the Target Group
-* Attach the Target Group to the ALB
+* Create a Listener to connect the ALB with the Target Group
 
 To finish the implementation we're going to create the load balancer that will balance the traffic between instances placed in different availability zones.
 
@@ -373,25 +362,7 @@ The outpot of the previous command is the information of the newly created ELB i
 
 ### Create Target Group
 
-```
-create-target-group
-    --name <value>
-    [--protocol <value>]
-    [--port <value>]
-    [--vpc-id <value>]
-    [--health-check-protocol <value>]
-    [--health-check-port <value>]
-    [--health-check-enabled | --no-health-check-enabled]
-    [--health-check-path <value>]
-    [--health-check-interval-seconds <value>]
-    [--health-check-timeout-seconds <value>]
-    [--healthy-threshold-count <value>]
-    [--unhealthy-threshold-count <value>]
-    [--matcher <value>]
-    [--target-type <value>]
-    [--cli-input-json <value>]
-    [--generate-cli-skeleton <value>]
-```
+Your load balancer routes requests to the targets in this target group using the protocol and port that you specify, and performs health checks on the targets using these health check settings. Note that each target group can be associated with only one load balancer.
 
 ```bash
 (bash) $ aws elbv2 create-target-group --name instances --target-type instance --vpc-id vpc-d64fd4ac --protocol HTTP --port 80 --health-check-path /health
@@ -427,29 +398,13 @@ Output:
 
 ### Register instances in the Target Group
 
-```
-register-targets
-  --target-group-arn <value>
-  --targets <value>
-```
-
 ```bash
 (bash) $ aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/15fcba658f0ee396 --targets Id=i-0efcbb18f510d7937 Id=i-0ffdbf33264b3fe15
 ```
 
 ### Create Listener for the ELB
 
-```
-create-listener
-  --load-balancer-arn <value>
-  --protocol <value>
-  --port <value>
-  [--ssl-policy <value>]
-  [--certificates <value>]
-  --default-actions <value>
-  [--cli-input-json <value>]
-  [--generate-cli-skeleton <value>]
-```
+A listener is a process that checks for connection requests, using the protocol and port that you configured.
 
 ```bash
 (bash) $ aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:436887685341:loadbalancer/app/az-balancer/73a77714d4f8498b --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:436887685341:targetgroup/instances/15fcba658f0ee396
